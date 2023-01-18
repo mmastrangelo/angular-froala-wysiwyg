@@ -1,106 +1,12 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/forms'), require('@angular/core'), require('@angular/common/http'), require('rxjs'), require('rxjs/operators')) :
-    typeof define === 'function' && define.amd ? define('angular-froala-wysiwyg', ['exports', '@angular/forms', '@angular/core', '@angular/common/http', 'rxjs', 'rxjs/operators'], factory) :
-    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global['angular-froala-wysiwyg'] = {}, global.ng.forms, global.ng.core, global.ng.common.http, global.rxjs, global.rxjs.operators));
-}(this, (function (exports, forms, i0, i1, rxjs, operators) { 'use strict';
-
-    /**
-     * ScriptLoaderService inserts a script tag into the document containing a script from the specified source.
-     */
-    var ScriptLoaderService = /** @class */ (function () {
-        function ScriptLoaderService(http) {
-            this.http = http;
-            this.scripts = {};
-        }
-        ScriptLoaderService.prototype.load = function (id, src) {
-            if (this.scripts[id]) {
-                return rxjs.of(({ script: id, loaded: true, status: 'Already Loaded' }));
-            }
-            var script = this.initializeScript(id);
-            script.src = src;
-            return this.loadAndAppendScript(id, script);
-        };
-        ScriptLoaderService.prototype.loadWithAuth = function (id, src) {
-            var _this = this;
-            if (this.scripts[id]) {
-                return rxjs.of(({ script: id, loaded: true, status: 'Already Loaded' }));
-            }
-            var script = this.initializeScript(id);
-            return this.getText(src, new i1.HttpHeaders(), new i1.HttpParams()).pipe(operators.switchMap(function (text) {
-                script.innerText = text;
-                return _this.loadAndAppendScript(id, script);
-            }));
-        };
-        ScriptLoaderService.prototype.unloadScript = function (id) {
-            var _a;
-            (_a = document.getElementById("script_" + id)) === null || _a === void 0 ? void 0 : _a.remove();
-            delete this.scripts[id];
-        };
-        ScriptLoaderService.prototype.initializeScript = function (id) {
-            var script = document.getElementById("script_" + id); // Don't proliferate script tags on revisits
-            if (!script) {
-                script = document.createElement('script');
-            }
-            script.id = "script_" + id;
-            script.type = 'text/javascript';
-            return script;
-        };
-        ScriptLoaderService.prototype.loadAndAppendScript = function (id, script) {
-            var _this = this;
-            return new rxjs.Observable(function (subscriber) {
-                if (script.src) { // If the script has a URL src, complete the observable when it is loaded; otherwise, assume the source is included as bodycontent and complete immediately
-                    if (script.readyState) { // IE
-                        script.onreadystatechange = function () {
-                            if (script.readyState === "loaded" || script.readyState === "complete") {
-                                script.onreadystatechange = null;
-                                _this.scripts[id] = true;
-                                subscriber.next({ script: id, loaded: true, status: 'Loaded' });
-                                subscriber.complete();
-                            }
-                        };
-                    }
-                    else { // Others
-                        script.onload = function () {
-                            _this.scripts[id] = true;
-                            subscriber.next({ script: id, loaded: true, status: 'Loaded' });
-                            subscriber.complete();
-                        };
-                    }
-                    script.onerror = function (err) { return subscriber.error({ script: id, loaded: false, status: 'Loaded', error: err }); };
-                    document.getElementsByTagName('head')[0].appendChild(script);
-                }
-                else {
-                    _this.scripts[id] = true;
-                    subscriber.next({ script: id, loaded: true, status: 'Loaded' });
-                    subscriber.complete();
-                }
-            });
-        };
-        ScriptLoaderService.prototype.getText = function (url, headers, params) {
-            return this.http.get(url, {
-                headers: headers,
-                observe: 'body',
-                responseType: 'text',
-                params: params,
-            });
-        };
-        return ScriptLoaderService;
-    }());
-    /** @nocollapse */ ScriptLoaderService.ɵprov = i0.ɵɵdefineInjectable({ factory: function ScriptLoaderService_Factory() { return new ScriptLoaderService(i0.ɵɵinject(i1.HttpClient)); }, token: ScriptLoaderService, providedIn: "root" });
-    ScriptLoaderService.decorators = [
-        { type: i0.Injectable, args: [{
-                    providedIn: 'root'
-                },] }
-    ];
-    /** @nocollapse */
-    ScriptLoaderService.ctorParameters = function () { return [
-        { type: i1.HttpClient }
-    ]; };
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/forms'), require('@angular/core')) :
+    typeof define === 'function' && define.amd ? define('angular-froala-wysiwyg', ['exports', '@angular/forms', '@angular/core'], factory) :
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global['angular-froala-wysiwyg'] = {}, global.ng.forms, global.ng.core));
+}(this, (function (exports, forms, core) { 'use strict';
 
     var FroalaEditorDirective = /** @class */ (function () {
-        function FroalaEditorDirective(el, zone, scriptLoader) {
+        function FroalaEditorDirective(el, zone) {
             this.zone = zone;
-            this.scriptLoader = scriptLoader;
             // editor options
             this._opts = {
                 immediateAngularModelUpdate: false,
@@ -117,9 +23,9 @@
             this.onTouched = function () {
             };
             // froalaModel directive as output: update model if editor contentChanged
-            this.froalaModelChange = new i0.EventEmitter();
+            this.froalaModelChange = new core.EventEmitter();
             // froalaInit directive as output: send manual editor initialization
-            this.froalaInit = new i0.EventEmitter();
+            this.froalaInit = new core.EventEmitter();
             var element = el.nativeElement;
             // check if the element is a special tag
             if (this.SPECIAL_TAGS.indexOf(element.tagName.toLowerCase()) != -1) {
@@ -308,29 +214,25 @@
             if (this._editorInitialized) {
                 return;
             }
-            this.scriptLoader.load("Froala", this._opts.froalaJsPath)
-                .toPromise()
-                .then(function () {
-                _this.setContent(true);
-                // init editor
-                _this.zone.runOutsideAngular(function () {
-                    // Add listeners on initialized event.
-                    if (!_this._opts.events)
-                        _this._opts.events = {};
-                    // Register initialized event.
-                    _this.registerEvent('initialized', _this._opts.events && _this._opts.events.initialized);
-                    var existingInitCallback = _this._opts.events.initialized;
-                    // Default initialized event.
-                    if (!_this._opts.events.initialized || !_this._opts.events.initialized.overridden) {
-                        _this._opts.events.initialized = function () {
-                            _this.initListeners();
-                            existingInitCallback && existingInitCallback.call(_this._editor, _this);
-                        };
-                        _this._opts.events.initialized.overridden = true;
-                    }
-                    // Initialize the Froala Editor.
-                    _this._editor = new FroalaEditor(_this._element, _this._opts);
-                });
+            this.setContent(true);
+            // init editor
+            this.zone.runOutsideAngular(function () {
+                // Add listeners on initialized event.
+                if (!_this._opts.events)
+                    _this._opts.events = {};
+                // Register initialized event.
+                _this.registerEvent('initialized', _this._opts.events && _this._opts.events.initialized);
+                var existingInitCallback = _this._opts.events.initialized;
+                // Default initialized event.
+                if (!_this._opts.events.initialized || !_this._opts.events.initialized.overridden) {
+                    _this._opts.events.initialized = function () {
+                        _this.initListeners();
+                        existingInitCallback && existingInitCallback.call(_this._editor, _this);
+                    };
+                    _this._opts.events.initialized.overridden = true;
+                }
+                // Initialize the Froala Editor.
+                _this._editor = new FroalaEditor(_this._element, _this._opts);
             });
         };
         FroalaEditorDirective.prototype.setHtml = function () {
@@ -410,13 +312,13 @@
         return FroalaEditorDirective;
     }());
     FroalaEditorDirective.decorators = [
-        { type: i0.Directive, args: [{
+        { type: core.Directive, args: [{
                     selector: '[froalaEditor]',
                     exportAs: 'froalaEditor',
                     providers: [
                         {
                             provide: forms.NG_VALUE_ACCESSOR,
-                            useExisting: i0.forwardRef(function () { return FroalaEditorDirective; }),
+                            useExisting: core.forwardRef(function () { return FroalaEditorDirective; }),
                             multi: true
                         }
                     ]
@@ -424,15 +326,14 @@
     ];
     /** @nocollapse */
     FroalaEditorDirective.ctorParameters = function () { return [
-        { type: i0.ElementRef },
-        { type: i0.NgZone },
-        { type: ScriptLoaderService }
+        { type: core.ElementRef },
+        { type: core.NgZone }
     ]; };
     FroalaEditorDirective.propDecorators = {
-        froalaEditor: [{ type: i0.Input }],
-        froalaModel: [{ type: i0.Input }],
-        froalaModelChange: [{ type: i0.Output }],
-        froalaInit: [{ type: i0.Output }]
+        froalaEditor: [{ type: core.Input }],
+        froalaModel: [{ type: core.Input }],
+        froalaModelChange: [{ type: core.Output }],
+        froalaInit: [{ type: core.Output }]
     };
 
     var FroalaEditorModule = /** @class */ (function () {
@@ -444,7 +345,7 @@
         return FroalaEditorModule;
     }());
     FroalaEditorModule.decorators = [
-        { type: i0.NgModule, args: [{
+        { type: core.NgModule, args: [{
                     declarations: [FroalaEditorDirective],
                     exports: [FroalaEditorDirective]
                 },] }
@@ -469,17 +370,17 @@
         return FroalaViewDirective;
     }());
     FroalaViewDirective.decorators = [
-        { type: i0.Directive, args: [{
+        { type: core.Directive, args: [{
                     selector: '[froalaView]'
                 },] }
     ];
     /** @nocollapse */
     FroalaViewDirective.ctorParameters = function () { return [
-        { type: i0.Renderer2 },
-        { type: i0.ElementRef }
+        { type: core.Renderer2 },
+        { type: core.ElementRef }
     ]; };
     FroalaViewDirective.propDecorators = {
-        froalaView: [{ type: i0.Input }]
+        froalaView: [{ type: core.Input }]
     };
 
     var FroalaViewModule = /** @class */ (function () {
@@ -491,7 +392,7 @@
         return FroalaViewModule;
     }());
     FroalaViewModule.decorators = [
-        { type: i0.NgModule, args: [{
+        { type: core.NgModule, args: [{
                     declarations: [FroalaViewDirective],
                     exports: [FroalaViewDirective]
                 },] }
@@ -503,7 +404,7 @@
         return FERootModule;
     }());
     FERootModule.decorators = [
-        { type: i0.NgModule, args: [{
+        { type: core.NgModule, args: [{
                     imports: [
                         FroalaEditorModule.forRoot(),
                         FroalaViewModule.forRoot()
@@ -524,7 +425,6 @@
     exports.FroalaEditorModule = FroalaEditorModule;
     exports.FroalaViewDirective = FroalaViewDirective;
     exports.FroalaViewModule = FroalaViewModule;
-    exports.ɵa = ScriptLoaderService;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

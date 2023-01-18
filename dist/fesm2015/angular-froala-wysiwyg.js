@@ -1,103 +1,9 @@
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ɵɵdefineInjectable, ɵɵinject, Injectable, EventEmitter, Directive, forwardRef, ElementRef, NgZone, Input, Output, NgModule, Renderer2 } from '@angular/core';
-import { HttpHeaders, HttpParams, HttpClient } from '@angular/common/http';
-import { of, Observable } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
-
-/**
- * ScriptLoaderService inserts a script tag into the document containing a script from the specified source.
- */
-class ScriptLoaderService {
-    constructor(http) {
-        this.http = http;
-        this.scripts = {};
-    }
-    load(id, src) {
-        if (this.scripts[id]) {
-            return of(({ script: id, loaded: true, status: 'Already Loaded' }));
-        }
-        let script = this.initializeScript(id);
-        script.src = src;
-        return this.loadAndAppendScript(id, script);
-    }
-    loadWithAuth(id, src) {
-        if (this.scripts[id]) {
-            return of(({ script: id, loaded: true, status: 'Already Loaded' }));
-        }
-        let script = this.initializeScript(id);
-        return this.getText(src, new HttpHeaders(), new HttpParams()).pipe(switchMap(text => {
-            script.innerText = text;
-            return this.loadAndAppendScript(id, script);
-        }));
-    }
-    unloadScript(id) {
-        var _a;
-        (_a = document.getElementById("script_" + id)) === null || _a === void 0 ? void 0 : _a.remove();
-        delete this.scripts[id];
-    }
-    initializeScript(id) {
-        let script = document.getElementById("script_" + id); // Don't proliferate script tags on revisits
-        if (!script) {
-            script = document.createElement('script');
-        }
-        script.id = "script_" + id;
-        script.type = 'text/javascript';
-        return script;
-    }
-    loadAndAppendScript(id, script) {
-        return new Observable(subscriber => {
-            if (script.src) { // If the script has a URL src, complete the observable when it is loaded; otherwise, assume the source is included as bodycontent and complete immediately
-                if (script.readyState) { // IE
-                    script.onreadystatechange = () => {
-                        if (script.readyState === "loaded" || script.readyState === "complete") {
-                            script.onreadystatechange = null;
-                            this.scripts[id] = true;
-                            subscriber.next({ script: id, loaded: true, status: 'Loaded' });
-                            subscriber.complete();
-                        }
-                    };
-                }
-                else { // Others
-                    script.onload = () => {
-                        this.scripts[id] = true;
-                        subscriber.next({ script: id, loaded: true, status: 'Loaded' });
-                        subscriber.complete();
-                    };
-                }
-                script.onerror = err => subscriber.error({ script: id, loaded: false, status: 'Loaded', error: err });
-                document.getElementsByTagName('head')[0].appendChild(script);
-            }
-            else {
-                this.scripts[id] = true;
-                subscriber.next({ script: id, loaded: true, status: 'Loaded' });
-                subscriber.complete();
-            }
-        });
-    }
-    getText(url, headers, params) {
-        return this.http.get(url, {
-            headers: headers,
-            observe: 'body',
-            responseType: 'text',
-            params: params,
-        });
-    }
-}
-/** @nocollapse */ ScriptLoaderService.ɵprov = ɵɵdefineInjectable({ factory: function ScriptLoaderService_Factory() { return new ScriptLoaderService(ɵɵinject(HttpClient)); }, token: ScriptLoaderService, providedIn: "root" });
-ScriptLoaderService.decorators = [
-    { type: Injectable, args: [{
-                providedIn: 'root'
-            },] }
-];
-/** @nocollapse */
-ScriptLoaderService.ctorParameters = () => [
-    { type: HttpClient }
-];
+import { EventEmitter, Directive, forwardRef, ElementRef, NgZone, Input, Output, NgModule, Renderer2 } from '@angular/core';
 
 class FroalaEditorDirective {
-    constructor(el, zone, scriptLoader) {
+    constructor(el, zone) {
         this.zone = zone;
-        this.scriptLoader = scriptLoader;
         // editor options
         this._opts = {
             immediateAngularModelUpdate: false,
@@ -295,29 +201,25 @@ class FroalaEditorDirective {
         if (this._editorInitialized) {
             return;
         }
-        this.scriptLoader.load("Froala", this._opts.froalaJsPath)
-            .toPromise()
-            .then(() => {
-            this.setContent(true);
-            // init editor
-            this.zone.runOutsideAngular(() => {
-                // Add listeners on initialized event.
-                if (!this._opts.events)
-                    this._opts.events = {};
-                // Register initialized event.
-                this.registerEvent('initialized', this._opts.events && this._opts.events.initialized);
-                const existingInitCallback = this._opts.events.initialized;
-                // Default initialized event.
-                if (!this._opts.events.initialized || !this._opts.events.initialized.overridden) {
-                    this._opts.events.initialized = () => {
-                        this.initListeners();
-                        existingInitCallback && existingInitCallback.call(this._editor, this);
-                    };
-                    this._opts.events.initialized.overridden = true;
-                }
-                // Initialize the Froala Editor.
-                this._editor = new FroalaEditor(this._element, this._opts);
-            });
+        this.setContent(true);
+        // init editor
+        this.zone.runOutsideAngular(() => {
+            // Add listeners on initialized event.
+            if (!this._opts.events)
+                this._opts.events = {};
+            // Register initialized event.
+            this.registerEvent('initialized', this._opts.events && this._opts.events.initialized);
+            const existingInitCallback = this._opts.events.initialized;
+            // Default initialized event.
+            if (!this._opts.events.initialized || !this._opts.events.initialized.overridden) {
+                this._opts.events.initialized = () => {
+                    this.initListeners();
+                    existingInitCallback && existingInitCallback.call(this._editor, this);
+                };
+                this._opts.events.initialized.overridden = true;
+            }
+            // Initialize the Froala Editor.
+            this._editor = new FroalaEditor(this._element, this._opts);
         });
     }
     setHtml() {
@@ -410,8 +312,7 @@ FroalaEditorDirective.decorators = [
 /** @nocollapse */
 FroalaEditorDirective.ctorParameters = () => [
     { type: ElementRef },
-    { type: NgZone },
-    { type: ScriptLoaderService }
+    { type: NgZone }
 ];
 FroalaEditorDirective.propDecorators = {
     froalaEditor: [{ type: Input }],
@@ -490,5 +391,5 @@ FERootModule.decorators = [
  * Generated bundle index. Do not edit.
  */
 
-export { FERootModule, FroalaEditorDirective, FroalaEditorModule, FroalaViewDirective, FroalaViewModule, ScriptLoaderService as ɵa };
+export { FERootModule, FroalaEditorDirective, FroalaEditorModule, FroalaViewDirective, FroalaViewModule };
 //# sourceMappingURL=angular-froala-wysiwyg.js.map
