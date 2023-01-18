@@ -1,8 +1,11 @@
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
-import { Directive, ElementRef, EventEmitter, forwardRef, Input, NgZone, OnInit, Output } from '@angular/core';
-import { ScriptLoaderService } from "../loader/script-loader.service";
+import { Directive, ElementRef, EventEmitter, forwardRef, Input, NgZone, Output } from '@angular/core';
 
-// import FroalaEditor from 'froala-editor';
+export type ScriptLoaderResponse = { script: string, loaded: boolean, status: string, error?: string | Event };
+
+export interface ScriptLoader {
+    load(): Promise<ScriptLoaderResponse>
+}
 
 declare let FroalaEditor;
 
@@ -41,7 +44,7 @@ export class FroalaEditorDirective implements ControlValueAccessor {
 
   private _oldModel: string = null;
 
-  constructor(el: ElementRef, private zone: NgZone, private scriptLoader: ScriptLoaderService) {
+  constructor(el: ElementRef, private zone: NgZone) {
 
     let element: any = el.nativeElement;
 
@@ -256,8 +259,8 @@ export class FroalaEditorDirective implements ControlValueAccessor {
       return;
     }
 
-    this.scriptLoader.load("Froala", this._opts.froalaJsPath)
-      .toPromise()
+    let sl: ScriptLoader = this._opts.scriptLoader;
+    sl.load()
       .then(() => {
         this.setContent(true);
 
