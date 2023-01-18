@@ -20,7 +20,6 @@ yarn.lock
 npm-debug.log
 
 # ignore build and dist for now
-/dist
 /temp
 /demo/dist
 /demo/temp
@@ -42,5 +41,3 @@ scripts/**/*.map
 /src/typings/tsd/
 /typings/**
 /tsd_typings/
-
-package-lock.json

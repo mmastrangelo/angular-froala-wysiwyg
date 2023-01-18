@@ -1,0 +1,16 @@
+{
+  "name": "angular-froala-wysiwyg",
+  "version": "4.0.16",
+  "dependencies": {
+    "froala-editor": "4.0.16",
+    "tslib": "^2.0.0"
+  },
+  "main": "bundles/angular-froala-wysiwyg.umd.js",
+  "module": "fesm2015/angular-froala-wysiwyg.js",
+  "es2015": "fesm2015/angular-froala-wysiwyg.js",
+  "esm2015": "esm2015/angular-froala-wysiwyg.js",
+  "fesm2015": "fesm2015/angular-froala-wysiwyg.js",
+  "typings": "angular-froala-wysiwyg.d.ts",
+  "metadata": "angular-froala-wysiwyg.metadata.json",
+  "sideEffects": false
+}

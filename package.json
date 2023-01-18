@@ -51,7 +51,6 @@
   },
   "dependencies": {
     "font-awesome": "^4.7.0",
-    "froala-editor": "^4.0.16",
     "tslib": "^2.0.0"
   },
   "peerDependencies": {},

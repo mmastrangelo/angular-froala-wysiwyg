@@ -1,7 +1,10 @@
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
-import { Directive, ElementRef, EventEmitter, forwardRef, Input, NgZone, Output } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, forwardRef, Input, NgZone, OnInit, Output } from '@angular/core';
+import { ScriptLoaderService } from "../loader/script-loader.service";
 
-import FroalaEditor from 'froala-editor';
+// import FroalaEditor from 'froala-editor';
+
+declare let FroalaEditor;
 
 @Directive({
   selector: '[froalaEditor]',
@@ -14,7 +17,7 @@ import FroalaEditor from 'froala-editor';
     }
   ]
 })
-export class FroalaEditorDirective implements ControlValueAccessor {
+export class FroalaEditorDirective implements ControlValueAccessor, OnInit {
 
   // editor options
   private _opts: any = {
@@ -38,7 +41,7 @@ export class FroalaEditorDirective implements ControlValueAccessor {
 
   private _oldModel: string = null;
 
-  constructor(el: ElementRef, private zone: NgZone) {
+  constructor(el: ElementRef, private zone: NgZone, private scriptLoader: ScriptLoaderService) {
 
     let element: any = el.nativeElement;
 
@@ -49,6 +52,10 @@ export class FroalaEditorDirective implements ControlValueAccessor {
     this._element = element;
 
     this.zone = zone;
+  }
+
+  async ngOnInit() {
+    await this.scriptLoader.load("Froala", this._opts.froalaJsPath);
   }
 
   // Begin ControlValueAccesor methods.
