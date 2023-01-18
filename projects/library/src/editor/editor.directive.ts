@@ -2,10 +2,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { Directive, ElementRef, EventEmitter, forwardRef, Input, NgZone, Output } from '@angular/core';
 
 export type ScriptLoaderResponse = { script: string, loaded: boolean, status: string, error?: string | Event };
-
-export interface ScriptLoader {
-    load(): Promise<ScriptLoaderResponse>
-}
+export type LoadScript = () => Promise<ScriptLoaderResponse>;
 
 declare let FroalaEditor;
 
@@ -259,9 +256,8 @@ export class FroalaEditorDirective implements ControlValueAccessor {
       return;
     }
 
-    let sl: ScriptLoader = this._opts.scriptLoader;
-    sl.load()
-      .then(() => {
+    let load: LoadScript = this._opts.loadScript;
+    load().then(() => {
         this.setContent(true);
 
         // init editor
