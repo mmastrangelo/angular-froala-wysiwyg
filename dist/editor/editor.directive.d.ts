@@ -1,7 +1,7 @@
 import { ControlValueAccessor } from "@angular/forms";
-import { ElementRef, EventEmitter, NgZone, OnInit } from '@angular/core';
+import { ElementRef, EventEmitter, NgZone } from '@angular/core';
 import { ScriptLoaderService } from "../loader/script-loader.service";
-export declare class FroalaEditorDirective implements ControlValueAccessor, OnInit {
+export declare class FroalaEditorDirective implements ControlValueAccessor {
     private zone;
     private scriptLoader;
     private _opts;
@@ -14,7 +14,6 @@ export declare class FroalaEditorDirective implements ControlValueAccessor, OnIn
     private _editorInitialized;
     private _oldModel;
     constructor(el: ElementRef, zone: NgZone, scriptLoader: ScriptLoaderService);
-    ngOnInit(): Promise<void>;
     onChange: (_: any) => void;
     onTouched: () => void;
     writeValue(content: any): void;

@@ -1,4 +1,3 @@
-import { __awaiter } from 'tslib';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ɵɵdefineInjectable, ɵɵinject, Injectable, EventEmitter, Directive, forwardRef, ElementRef, NgZone, Input, Output, NgModule, Renderer2 } from '@angular/core';
 import { HttpHeaders, HttpParams, HttpClient } from '@angular/common/http';
@@ -125,11 +124,6 @@ class FroalaEditorDirective {
         }
         this._element = element;
         this.zone = zone;
-    }
-    ngOnInit() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.scriptLoader.load("Froala", "../assets/froala_editor.pkgd.min.js");
-        });
     }
     // Form model content changed.
     writeValue(content) {
@@ -301,25 +295,29 @@ class FroalaEditorDirective {
         if (this._editorInitialized) {
             return;
         }
-        this.setContent(true);
-        // init editor
-        this.zone.runOutsideAngular(() => {
-            // Add listeners on initialized event.
-            if (!this._opts.events)
-                this._opts.events = {};
-            // Register initialized event.
-            this.registerEvent('initialized', this._opts.events && this._opts.events.initialized);
-            const existingInitCallback = this._opts.events.initialized;
-            // Default initialized event.
-            if (!this._opts.events.initialized || !this._opts.events.initialized.overridden) {
-                this._opts.events.initialized = () => {
-                    this.initListeners();
-                    existingInitCallback && existingInitCallback.call(this._editor, this);
-                };
-                this._opts.events.initialized.overridden = true;
-            }
-            // Initialize the Froala Editor.
-            this._editor = new FroalaEditor(this._element, this._opts);
+        this.scriptLoader.load("Froala", this._opts.froalaJsPath)
+            .toPromise()
+            .then(() => {
+            this.setContent(true);
+            // init editor
+            this.zone.runOutsideAngular(() => {
+                // Add listeners on initialized event.
+                if (!this._opts.events)
+                    this._opts.events = {};
+                // Register initialized event.
+                this.registerEvent('initialized', this._opts.events && this._opts.events.initialized);
+                const existingInitCallback = this._opts.events.initialized;
+                // Default initialized event.
+                if (!this._opts.events.initialized || !this._opts.events.initialized.overridden) {
+                    this._opts.events.initialized = () => {
+                        this.initListeners();
+                        existingInitCallback && existingInitCallback.call(this._editor, this);
+                    };
+                    this._opts.events.initialized.overridden = true;
+                }
+                // Initialize the Froala Editor.
+                this._editor = new FroalaEditor(this._element, this._opts);
+            });
         });
     }
     setHtml() {
